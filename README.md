@@ -1,0 +1,54 @@
+# Secondhand
+
+A small, mobile-friendly personal secondhand catalog for sharing in WeChat groups. Buyers browse the catalog and contact the seller on WeChat. There are no accounts, messages, checkout, or admin dashboard.
+
+## Run locally
+
+Requires Node.js 22 or newer. Production serves static files and does not require Node.js.
+
+```sh
+npm ci
+npm run dev
+```
+
+Open the printed loopback URL. After changing content or source files, run `npm run build` and refresh the browser. The preview server serves the current `dist/` directory.
+
+## Content
+
+Copy `content/site.example.json` to `site.local.json` and edit the copy. The local file and `assets.local/` are ignored by Git. If no local file exists, the build uses the clearly labeled example catalog.
+
+- `pickup`: short public introduction with pickup and campus meeting arrangements.
+- `wechat` and `qrImage`: optional public WeChat ID and QR image path.
+- `demo`: keep `true` until all example listings are replaced. Set to `false` for the real catalog.
+- `items`: unique slug, name, nonnegative USD price, condition, description, status, date, and images.
+- `laterDescription`: introduction to the graduation items page. The home page shows items available now, while `/later.html` shows items with a future availability date, including any already reserved. Items move to the current page when the date arrives.
+- `status`: `available`, `reserved`, or `sold`. Set `availableFrom` to `null` for immediate availability, or an ISO date such as `2027-05-20` for later pickup. A future date displays as upcoming; once the date arrives in `timeZone`, the item displays as available. Reserved and sold statuses take priority. Dates are estimates, not automatic reservations.
+- `images`: paths such as `/media/chair/front.webp`. Put the corresponding files in `assets.local/chair/front.webp`. Use real photos for live listings; live mode rejects items without photos.
+- `labels`, title, introduction, locale, currency, and timezone are configuration data. Keep seller-specific information out of application source.
+
+Process uploaded photos to remove EXIF and other metadata before adding them to `assets.local/`. Optimize photos as JPEG/WebP and use reasonably sized images. QR codes must remain readable.
+
+Local files are excluded from the public repository, but **the built catalog, address, QR code and every file in `assets.local/` become public when deployed**. Do not put private photos, drafts, credentials or backups there.
+
+## Checks
+
+```sh
+npm run format
+npm run format:check
+npm run check
+npm run build
+```
+
+Validation rejects duplicate IDs, negative prices, invalid calendar dates, unsafe image paths, and live listings without photos. Before publishing, inspect desktop and mobile layouts, the two separate availability pages, prices, item links, gallery, contact dialog, and QR readability.
+
+## Deployment
+
+Use an existing Nginx host. Copy only `dist/` into a new release directory, such as `/srv/secondhand/releases/<release>/`, then point `/srv/secondhand/current` to that directory. Keep previous releases for rollback. Never upload the repository root or local content source as a web root.
+
+`deploy/nginx.conf` is an HTTP virtual-host template. Replace its server name and root for the target installation, enable the virtual host, run `sudo nginx -t`, and reload only after it passes. Point the subdomain's DNS A record at the server. Request HTTPS with Certbot using its Nginx integration and enable HTTP redirection. Verify the renewal timer and run `certbot renew --dry-run` for the new certificate after issuance.
+
+Before deploying, check existing virtual hosts and do not replace unrelated configurations. Serve `site.json`, HTML, JavaScript and CSS with revalidation to avoid stale prices or status. Product links use `#item=<slug>` and remain valid as long as the item ID stays the same. WeChat preview cards use the catalog's generic title and description; individual rich previews are outside the scope of this static site.
+
+## Updating
+
+Edit `site.local.json`, add sanitized photos, build, inspect the result, then publish a new static release. Source changes are committed to GitHub; the seller's runtime data is maintained separately and should be backed up separately.

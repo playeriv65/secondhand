@@ -1,0 +1,293 @@
+import { localDay, itemsForPage, saleState } from "/availability.js";
+const $ = (selector) => document.querySelector(selector);
+let config;
+let photoIndex = 0;
+let activeItem;
+let toastTimer;
+const el = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+const today = () => localDay(config.timeZone);
+const itemState = (item) => saleState(item, today());
+const isLaterPage = document.body.dataset.page === "later";
+const dateText = (value) =>
+  new Intl.DateTimeFormat(config.locale, {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T12:00:00Z`));
+const availability = (item) =>
+  itemState(item) === "upcoming"
+    ? `${config.labels.datePrefix} ${dateText(item.availableFrom)} ${config.labels.dateSuffix}`
+    : config.labels[itemState(item)];
+const priceText = (item) =>
+  item.price === 0
+    ? config.labels.free
+    : new Intl.NumberFormat(config.locale, {
+        style: "currency",
+        currency: config.currency,
+        currencyDisplay: "narrowSymbol",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(item.price);
+
+function illustration(item) {
+  const shapes = {
+    lamp: '<path d="M112 176h90l-9-12h-70z" fill="#727a64"/><path d="m152 162 12-76-51-39" fill="none" stroke="#6d775e" stroke-width="9" stroke-linecap="round"/><path d="m104 35 31 28-52 28-3-31z" fill="#8e9b78"/><ellipse cx="104" cy="75" rx="28" ry="7" transform="rotate(-28 104 75)" fill="#faf1cc"/><circle cx="163" cy="85" r="8" fill="#4f5c46"/>',
+    coffee:
+      '<rect x="101" y="35" width="104" height="140" rx="12" fill="#5a6257"/><rect x="98" y="42" width="110" height="30" rx="6" fill="#747e6c"/><rect x="112" y="86" width="80" height="73" rx="4" fill="#383d36"/><path d="M123 102h52l7 50h-65z" fill="#c3b89c"/><path d="M179 112h9q17 0 12 21l-17 7" fill="none" stroke="#c3b89c" stroke-width="7"/><rect x="110" y="163" width="87" height="7" rx="3" fill="#8e9581"/><circle cx="189" cy="57" r="4" fill="#d5dfae"/>',
+    chair:
+      '<path d="M145 126v44m0 0-44 17m44-17 43 17m-43-17v24" stroke="#686956" stroke-width="7" stroke-linecap="round"/><path d="M106 45q42-20 83 0l-8 62h-68z" fill="#8c977a"/><path d="M101 110h90l11 17q-48 14-109 0z" fill="#6f7e5c"/><path d="m105 112-10-24m94 24 11-24" stroke="#687459" stroke-width="6" stroke-linecap="round"/>',
+    mugs: '<path d="M74 91h65v64q-30 20-60-1z" fill="#b4b697"/><path d="M138 101q35-4 26 27-7 14-25 10" fill="none" stroke="#b4b697" stroke-width="9"/><ellipse cx="106" cy="91" rx="32" ry="9" fill="#e8e1c6"/><ellipse cx="106" cy="92" rx="25" ry="6" fill="#8a8468"/><path d="M162 63h65v64q-30 20-60-1z" fill="#e4d3ac"/><path d="M225 73q35-4 26 27-7 14-25 10" fill="none" stroke="#e4d3ac" stroke-width="9"/><ellipse cx="194" cy="63" rx="32" ry="9" fill="#f6edd7"/><ellipse cx="194" cy="64" rx="25" ry="6" fill="#a79578"/>',
+    books:
+      '<path d="M77 146h152v24H77z" fill="#9b7868"/><path d="M85 150h144v16H85z" fill="#e8e2cf"/><path d="m91 120 135-6 1 26-135 6z" fill="#9aab89"/><path d="m99 125 126-5 1 15-126 6z" fill="#f6f0dd"/><path d="m86 94 125-9 2 25-125 9z" fill="#b5a16c"/><path d="m94 98 117-8 1 15-117 9z" fill="#e9e4d3"/><path d="m126 66 86-7 2 21-86 7z" fill="#6f7f68"/>',
+    storage:
+      '<path d="m83 88 119-18 35 30-117 21z" fill="#b3b9a3"/><path d="m83 88 37 33v61l-37-35z" fill="#8a967b"/><path d="m120 121 117-21v60l-117 22z" fill="#a4ae95"/><path d="m163 130 32-6v10l-32 6z" fill="#737e67"/>',
+  };
+  const wrapper = el("div");
+  wrapper.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" aria-hidden="true"><ellipse cx="160" cy="189" rx="90" ry="9" fill="#4c584a" opacity=".08"/>${shapes[item.illustration] || shapes.storage}</svg>`;
+  return wrapper.firstElementChild;
+}
+
+function makePrice(item) {
+  return el("span", "price", priceText(item));
+}
+function makeCard(item) {
+  const status = itemState(item);
+  const button = el("button", `item ${status}`);
+  button.type = "button";
+  button.setAttribute(
+    "aria-label",
+    `${item.name}，${priceText(item)}，${availability(item)}`,
+  );
+  const photo = el("div", "item-photo");
+  photo.style.backgroundColor = item.color || "#e7e8de";
+  if (item.images.length) {
+    const img = el("img");
+    img.src = item.images[0];
+    img.alt = item.name;
+    img.loading = "lazy";
+    photo.append(img);
+  } else {
+    photo.append(
+      illustration(item),
+      el(
+        "span",
+        "photo-label",
+        config.demo ? "ILLUSTRATION / 示例插画" : config.labels.photo,
+      ),
+    );
+  }
+  photo.append(
+    el(
+      "span",
+      `badge ${status}`,
+      status === "upcoming" ? config.labels.upcoming : config.labels[status],
+    ),
+  );
+  const info = el("div", "item-info");
+  const meta = el("div", "item-meta");
+  meta.append(el("span", "", item.condition));
+  const title = el("div", "item-title-row");
+  title.append(el("h3", "", item.name), makePrice(item));
+  const bottom = el("div", "item-bottom");
+  bottom.append(
+    el("span", "", availability(item)),
+    el("span", "item-arrow", "↗"),
+  );
+  info.append(meta, title, el("p", "item-desc", item.description), bottom);
+  button.append(photo, info);
+  button.addEventListener("click", () => {
+    location.hash = `item=${encodeURIComponent(item.id)}`;
+  });
+  return button;
+}
+
+function render() {
+  const items = itemsForPage(config.items, isLaterPage, today());
+  $("#items").replaceChildren(...items.map(makeCard));
+  $("#empty").hidden = items.length > 0;
+}
+
+function renderGallery() {
+  const gallery = $("#gallery");
+  gallery.replaceChildren();
+  if (activeItem.images.length) {
+    const image = el("img", "gallery-main");
+    image.src = activeItem.images[photoIndex];
+    image.alt = `${activeItem.name} ${photoIndex + 1}`;
+    gallery.append(image);
+    if (activeItem.images.length > 1) {
+      const controls = el("div", "gallery-controls");
+      for (const [label, step] of [
+        [config.labels.previous, -1],
+        [config.labels.next, 1],
+      ]) {
+        const button = el("button", "", step === -1 ? "←" : "→");
+        button.setAttribute("aria-label", label);
+        button.addEventListener("click", () => {
+          photoIndex =
+            (photoIndex + step + activeItem.images.length) %
+            activeItem.images.length;
+          renderGallery();
+        });
+        controls.append(button);
+        if (step === -1)
+          controls.append(
+            el("span", "", `${photoIndex + 1} / ${activeItem.images.length}`),
+          );
+      }
+      gallery.append(controls);
+    }
+  } else
+    gallery.append(
+      illustration(activeItem),
+      el(
+        "span",
+        "detail-category",
+        config.demo ? config.labels.demo : config.labels.photo,
+      ),
+    );
+}
+
+function openItem(item) {
+  activeItem = item;
+  photoIndex = 0;
+  const layout = el("div", "detail-layout");
+  const gallery = el("div", "gallery");
+  gallery.id = "gallery";
+  gallery.style.backgroundColor = item.color || "#e7e8de";
+  const copy = el("div", "detail-copy");
+  const heading = el("h2", "", item.name);
+  heading.id = "detail-title";
+  copy.append(
+    el("div", "detail-category", item.condition),
+    heading,
+    makePrice(item),
+    el("h3", "", config.labels.availability),
+    el("p", "detail-status", availability(item)),
+    el("h3", "", config.labels.description),
+    el("p", "detail-description", item.description),
+  );
+  if (item.negotiable)
+    copy.append(el("p", "detail-category", config.labels.negotiable));
+  const contact = el("button", "primary", config.labels.contact);
+  contact.addEventListener("click", openContact);
+  const share = el("button", "secondary", config.labels.share);
+  share.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      toast(config.labels.copied);
+    } catch {
+      toast(config.labels.copyFailed);
+    }
+  });
+  copy.append(contact, share);
+  layout.append(gallery, copy);
+  $("#item-detail").replaceChildren(layout);
+  renderGallery();
+  const dialog = $("#item-dialog");
+  dialog.setAttribute("aria-labelledby", "detail-title");
+  if (!dialog.open) dialog.showModal();
+}
+function openContact() {
+  $("#contact-dialog").showModal();
+}
+function toast(message) {
+  clearTimeout(toastTimer);
+  $("#toast").textContent = message;
+  $("#toast").hidden = false;
+  toastTimer = setTimeout(() => {
+    $("#toast").hidden = true;
+  }, 3200);
+}
+function syncHash() {
+  const id = new URLSearchParams(location.hash.slice(1)).get("item");
+  const item = config.items.find((entry) => entry.id === id);
+  if (item) openItem(item);
+  else $("#item-dialog").close();
+}
+
+async function init() {
+  const response = await fetch("/site.json");
+  if (!response.ok)
+    throw new Error(`Catalog request failed: ${response.status}`);
+  config = await response.json();
+  document.title = isLaterPage
+    ? `${config.title} · 毕业后预计出`
+    : config.title;
+  document
+    .querySelector(`[data-page-link="${isLaterPage ? "later" : "now"}"]`)
+    .setAttribute("aria-current", "page");
+  $("#later-note").hidden = !isLaterPage;
+  $("#later-note").textContent = config.laterDescription;
+  $("#brand-title").textContent = config.title;
+  $("#headline").textContent = config.subtitle;
+  $("#description").textContent = config.description;
+  $("#pickup").textContent = config.pickup;
+  $("#demo-notice").hidden = !config.demo;
+  $("#demo-notice").textContent = config.labels.demo;
+  $("#empty").textContent = config.labels.empty;
+  document
+    .querySelectorAll("[data-contact]")
+    .forEach((button) => button.addEventListener("click", openContact));
+  document.querySelectorAll("dialog").forEach((dialog) => {
+    dialog
+      .querySelector("[data-close]")
+      .addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) {
+        const rect = dialog.getBoundingClientRect();
+        if (
+          event.clientX < rect.left ||
+          event.clientX > rect.right ||
+          event.clientY < rect.top ||
+          event.clientY > rect.bottom
+        )
+          dialog.close();
+      }
+    });
+  });
+  $("#item-dialog").addEventListener("close", () => {
+    if (location.hash.startsWith("#item="))
+      history.replaceState(null, "", location.pathname + location.search);
+  });
+  $("#contact-dialog").setAttribute("aria-label", config.labels.contact);
+  if (config.qrImage) {
+    const img = el("img");
+    img.src = config.qrImage;
+    img.alt = config.labels.contact;
+    $("#qr").append(img);
+    const topImage = img.cloneNode();
+    $("#intro-contact").append(topImage);
+  } else {
+    const placeholder = el("div", "qr-placeholder");
+    placeholder.append(
+      el("span", "", "⌘"),
+      document.createTextNode(config.labels.qrPending),
+    );
+    $("#qr").append(placeholder);
+    $("#intro-contact").append(
+      el("span", "qr-symbol", "⌘"),
+      el("strong", "", config.labels.contact),
+      el("span", "", config.labels.wechatHint),
+    );
+  }
+  $("#wechat-id").textContent = config.wechat;
+  $("#wechat-id").hidden = !config.wechat;
+  $("#wechat-hint").textContent = config.qrImage
+    ? config.labels.qrHint
+    : config.labels.wechatHint;
+  window.addEventListener("hashchange", syncHash);
+  window.addEventListener("focus", render);
+  render();
+  syncHash();
+}
+init().catch((error) => {
+  console.error(error);
+  $("#items").textContent = "商品清单暂时无法加载，请刷新重试。";
+});

@@ -1,0 +1,19 @@
+{
+  "name": "secondhand",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs",
+    "check": "node --check public/app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs && node scripts/check.mjs",
+    "format": "prettier --write public scripts content package.json README.md AGENTS.md",
+    "format:check": "prettier --check public scripts content package.json README.md AGENTS.md"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10"
+  }
+}
