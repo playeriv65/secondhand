@@ -4,8 +4,6 @@ export function validate(config) {
   };
   for (const key of [
     "title",
-    "subtitle",
-    "description",
     "laterDescription",
     "pickup",
     "currency",
@@ -31,17 +29,10 @@ export function validate(config) {
     "photo",
     "free",
     "negotiable",
-    "availability",
-    "description",
-    "share",
-    "copied",
-    "copyFailed",
     "qrPending",
     "qrAlt",
     "datePrefix",
     "dateSuffix",
-    "previous",
-    "next",
   ];
   for (const key of requiredLabels)
     require(typeof config.labels[key] === "string" &&

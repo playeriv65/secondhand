@@ -1,9 +1,6 @@
 import { localDay, itemsForPage, saleState } from "/availability.js";
 const $ = (selector) => document.querySelector(selector);
 let config;
-let photoIndex = 0;
-let activeItem;
-let toastTimer;
 const el = (tag, className, text) => {
   const node = document.createElement(tag);
   if (className) node.className = className;
@@ -58,9 +55,8 @@ function makePrice(item) {
 }
 function makeCard(item) {
   const status = itemState(item);
-  const button = el("button", `item ${status}`);
-  button.type = "button";
-  button.setAttribute(
+  const card = el("article", `item ${status}`);
+  card.setAttribute(
     "aria-label",
     `${item.name}，${priceText(item)}，${availability(item)}`,
   );
@@ -95,116 +91,29 @@ function makeCard(item) {
   const title = el("div", "item-title-row");
   title.append(el("h3", "", item.name), makePrice(item));
   const bottom = el("div", "item-bottom");
-  bottom.append(
-    el("span", "", availability(item)),
-    el("span", "item-arrow", "↗"),
-  );
+  bottom.append(el("span", "", availability(item)));
   info.append(meta, title, el("p", "item-desc", item.description), bottom);
-  button.append(photo, info);
-  button.addEventListener("click", () => {
-    location.hash = `item=${encodeURIComponent(item.id)}`;
-  });
-  return button;
+  if (item.negotiable)
+    info.append(el("p", "item-negotiable", config.labels.negotiable));
+  card.append(photo, info);
+  if (item.images.length > 1) {
+    const photos = el("div", "extra-photos");
+    for (const source of item.images.slice(1)) {
+      const image = el("img");
+      image.src = source;
+      image.alt = item.name;
+      image.loading = "lazy";
+      photos.append(image);
+    }
+    card.append(photos);
+  }
+  return card;
 }
 
 function render() {
   const items = itemsForPage(config.items, isLaterPage, today());
   $("#items").replaceChildren(...items.map(makeCard));
   $("#empty").hidden = items.length > 0;
-}
-
-function renderGallery() {
-  const gallery = $("#gallery");
-  gallery.replaceChildren();
-  if (activeItem.images.length) {
-    const image = el("img", "gallery-main");
-    image.src = activeItem.images[photoIndex];
-    image.alt = `${activeItem.name} ${photoIndex + 1}`;
-    gallery.append(image);
-    if (activeItem.images.length > 1) {
-      const controls = el("div", "gallery-controls");
-      for (const [label, step] of [
-        [config.labels.previous, -1],
-        [config.labels.next, 1],
-      ]) {
-        const button = el("button", "", step === -1 ? "←" : "→");
-        button.setAttribute("aria-label", label);
-        button.addEventListener("click", () => {
-          photoIndex =
-            (photoIndex + step + activeItem.images.length) %
-            activeItem.images.length;
-          renderGallery();
-        });
-        controls.append(button);
-        if (step === -1)
-          controls.append(
-            el("span", "", `${photoIndex + 1} / ${activeItem.images.length}`),
-          );
-      }
-      gallery.append(controls);
-    }
-  } else
-    gallery.append(
-      illustration(activeItem),
-      el(
-        "span",
-        "detail-category",
-        config.demo ? config.labels.demo : config.labels.photo,
-      ),
-    );
-}
-
-function openItem(item) {
-  activeItem = item;
-  photoIndex = 0;
-  const layout = el("div", "detail-layout");
-  const gallery = el("div", "gallery");
-  gallery.id = "gallery";
-  gallery.style.backgroundColor = item.color || "#e7e8de";
-  const copy = el("div", "detail-copy");
-  const heading = el("h2", "", item.name);
-  heading.id = "detail-title";
-  copy.append(
-    el("div", "detail-category", item.condition),
-    heading,
-    makePrice(item),
-    el("h3", "", config.labels.availability),
-    el("p", "detail-status", availability(item)),
-    el("h3", "", config.labels.description),
-    el("p", "detail-description", item.description),
-  );
-  if (item.negotiable)
-    copy.append(el("p", "detail-category", config.labels.negotiable));
-  const share = el("button", "secondary", config.labels.share);
-  share.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(location.href);
-      toast(config.labels.copied);
-    } catch {
-      toast(config.labels.copyFailed);
-    }
-  });
-  copy.append(share);
-  layout.append(gallery, copy);
-  $("#item-detail").replaceChildren(layout);
-  renderGallery();
-  const dialog = $("#item-dialog");
-  dialog.setAttribute("aria-labelledby", "detail-title");
-  if (!dialog.open) dialog.showModal();
-}
-function toast(message) {
-  clearTimeout(toastTimer);
-  $("#toast").textContent = message;
-  $("#toast").hidden = false;
-  toastTimer = setTimeout(() => {
-    $("#toast").hidden = true;
-  }, 3200);
-}
-function syncHash() {
-  const id = new URLSearchParams(location.hash.slice(1)).get("item");
-  const item = config.items.find((entry) => entry.id === id);
-  if (item) openItem(item);
-  else $("#item-dialog").close();
 }
 
 async function init() {
@@ -220,33 +129,11 @@ async function init() {
     .setAttribute("aria-current", "page");
   $("#later-note").hidden = !isLaterPage;
   $("#later-note").textContent = config.laterDescription;
-  $("#headline").textContent = config.subtitle;
   $("#description").textContent = config.description;
   $("#pickup").textContent = config.pickup;
   $("#demo-notice").hidden = !config.demo;
   $("#demo-notice").textContent = config.labels.demo;
   $("#empty").textContent = config.labels.empty;
-  document.querySelectorAll("dialog").forEach((dialog) => {
-    dialog
-      .querySelector("[data-close]")
-      .addEventListener("click", () => dialog.close());
-    dialog.addEventListener("click", (event) => {
-      if (event.target === dialog) {
-        const rect = dialog.getBoundingClientRect();
-        if (
-          event.clientX < rect.left ||
-          event.clientX > rect.right ||
-          event.clientY < rect.top ||
-          event.clientY > rect.bottom
-        )
-          dialog.close();
-      }
-    });
-  });
-  $("#item-dialog").addEventListener("close", () => {
-    if (location.hash.startsWith("#item="))
-      history.replaceState(null, "", location.pathname + location.search);
-  });
   if (config.qrImage) {
     const img = el("img");
     img.src = config.qrImage;
@@ -262,10 +149,8 @@ async function init() {
     );
     $("#intro-qr").append(placeholder);
   }
-  window.addEventListener("hashchange", syncHash);
   window.addEventListener("focus", render);
   render();
-  syncHash();
 }
 init().catch((error) => {
   console.error(error);
