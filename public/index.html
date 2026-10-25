@@ -14,12 +14,6 @@
     <script type="module" src="/app.js"></script>
   </head>
   <body data-page="now">
-    <header class="topbar">
-      <a class="brand" href="/" aria-label="首页"
-        ><span class="brand-icon">↗</span
-        ><span id="brand-title">闲置转让</span></a
-      ><button class="contact-button" data-contact>微信联系 ↗</button>
-    </header>
     <main>
       <section class="intro" aria-labelledby="headline">
         <div class="intro-copy">
@@ -27,12 +21,7 @@
           <p id="description"></p>
           <p id="pickup" class="pickup"></p>
         </div>
-        <button
-          id="intro-contact"
-          class="intro-contact"
-          data-contact
-          aria-label="微信联系"
-        ></button>
+        <div id="intro-qr" class="intro-qr"></div>
       </section>
       <nav class="pages" aria-label="出售时间">
         <a href="/" data-page-link="now">现在可出</a
@@ -47,20 +36,12 @@
         <p id="empty" class="empty" hidden></p>
       </section>
       <footer>
-        <span>个人闲置 · 微信联系 · 交接方式可商量</span
-        ><a href="#">回到顶部 ↑</a>
+        <a href="#">回到顶部 ↑</a>
       </footer>
     </main>
     <dialog id="item-dialog">
       <button class="close" data-close aria-label="关闭">×</button>
       <div id="item-detail"></div>
-    </dialog>
-    <dialog id="contact-dialog" class="contact-dialog">
-      <button class="close" data-close aria-label="关闭">×</button>
-      <h2>微信联系</h2>
-      <div id="qr"></div>
-      <p id="wechat-id"></p>
-      <p id="wechat-hint"></p>
     </dialog>
     <div id="toast" class="toast" role="status" hidden></div>
     <noscript>请开启 JavaScript 以浏览商品清单。</noscript>

@@ -27,44 +27,11 @@ a {
   color: inherit;
   text-decoration: none;
 }
-.topbar,
 main {
   max-width: 1120px;
   margin: auto;
   padding-left: 28px;
   padding-right: 28px;
-}
-.topbar {
-  height: 75px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 18px;
-  font-weight: 650;
-}
-.brand-icon {
-  display: grid;
-  place-items: center;
-  width: 31px;
-  height: 31px;
-  background: var(--green);
-  color: #e5edb4;
-  border-radius: 10px;
-  font-size: 25px;
-  font-weight: 400;
-}
-.contact-button {
-  border: 1px solid #c6cdbd;
-  border-radius: 6px;
-  padding: 9px 14px;
-  font-size: 12px;
-  background: transparent;
 }
 .intro {
   display: flex;
@@ -92,35 +59,6 @@ h1 {
 }
 .pickup {
   color: #50624b;
-}
-.intro-contact {
-  border: 1px solid #dce1ce;
-  background: #eaf0df;
-  border-radius: 9px;
-  flex: 0 0 170px;
-  padding: 15px 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
-}
-.intro-contact img {
-  width: 130px;
-  height: 130px;
-  object-fit: contain;
-}
-.intro-contact strong {
-  font-size: 13px;
-  font-weight: 550;
-}
-.intro-contact > span:last-child {
-  font-size: 10px;
-  color: #75836a;
-  line-height: 1.8;
-}
-.qr-symbol {
-  font-size: 28px;
-  line-height: 1;
 }
 .pages {
   display: flex;
@@ -284,8 +222,7 @@ h1 {
 }
 footer {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: flex-end;
   border-top: 1px solid var(--line);
   padding: 23px 0 30px;
   font-size: 10px;
@@ -395,7 +332,6 @@ h2 {
   font-size: 12px;
   line-height: 1.8;
 }
-.primary,
 .secondary {
   width: 100%;
   padding: 13px;
@@ -403,27 +339,9 @@ h2 {
   margin-top: 12px;
   font-size: 12px;
 }
-.primary {
-  background: var(--green);
-  border: 1px solid var(--green);
-  color: #fff;
-}
 .secondary {
   background: transparent;
   border: 1px solid #cbd0c0;
-}
-.contact-dialog {
-  max-width: 360px;
-  padding: 25px 30px;
-  text-align: center;
-}
-.contact-dialog h2 {
-  margin: 10px 0 22px;
-}
-.contact-dialog p {
-  font-size: 12px;
-  line-height: 1.8;
-  color: #77816e;
 }
 .qr-placeholder {
   border: 1px dashed #b9c3a8;
@@ -437,11 +355,6 @@ h2 {
   display: block;
   font-size: 35px;
   color: #607d4f;
-}
-#qr img {
-  width: 100%;
-  max-width: 250px;
-  height: auto;
 }
 .toast {
   position: fixed;
@@ -470,20 +383,9 @@ h2 {
   }
 }
 @media (max-width: 560px) {
-  .topbar,
   main {
     padding-left: 18px;
     padding-right: 18px;
-  }
-  .topbar {
-    height: 65px;
-  }
-  .brand {
-    font-size: 17px;
-  }
-  .contact-button {
-    font-size: 11px;
-    padding: 8px 11px;
   }
   .intro {
     display: block;
@@ -497,29 +399,6 @@ h2 {
   .pickup {
     font-size: 12px;
     line-height: 1.9;
-  }
-  .intro-contact {
-    flex-direction: row;
-    width: 100%;
-    padding: 10px 12px;
-    margin-top: 16px;
-    text-align: left;
-    gap: 10px;
-  }
-  .intro-contact img {
-    width: 95px;
-    height: 95px;
-    margin: auto;
-  }
-  .intro-contact .qr-symbol {
-    font-size: 23px;
-  }
-  .intro-contact strong {
-    font-size: 11px;
-    white-space: nowrap;
-  }
-  .intro-contact > span:last-child {
-    font-size: 10px;
   }
   .pages {
     gap: 24px;
@@ -618,5 +497,24 @@ h2 {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+  }
+}
+
+.intro-qr {
+  flex: 0 0 auto;
+}
+.intro-qr img {
+  display: block;
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+}
+@media (max-width: 560px) {
+  .intro-qr {
+    margin-top: 18px;
+  }
+  .intro-qr img {
+    width: 160px;
+    height: 160px;
   }
 }

@@ -18,7 +18,7 @@ Open the printed loopback URL. After changing content or source files, run `npm 
 Copy `content/site.example.json` to `site.local.json` and edit the copy. The local file and `assets.local/` are ignored by Git. If no local file exists, the build uses the clearly labeled example catalog.
 
 - `pickup`: short public introduction with pickup and campus meeting arrangements.
-- `wechat` and `qrImage`: optional public WeChat ID and QR image path.
+- `qrImage`: optional public QR image path. Show only the cropped QR code with its quiet zone, without the surrounding profile screenshot. The page starts with the introduction and QR image; it has no top bar or repeated contact links.
 - `demo`: keep `true` until all example listings are replaced. Set to `false` for the real catalog.
 - `items`: unique slug, name, nonnegative USD price, condition, description, status, date, and images.
 - `laterDescription`: introduction to the graduation items page. The home page shows items available now, while `/later.html` shows items with a future availability date, including any already reserved. Items move to the current page when the date arrives.
@@ -39,7 +39,7 @@ npm run check
 npm run build
 ```
 
-Validation rejects duplicate IDs, negative prices, invalid calendar dates, unsafe image paths, and live listings without photos. Before publishing, inspect desktop and mobile layouts, the two separate availability pages, prices, item links, gallery, contact dialog, and QR readability.
+Validation rejects duplicate IDs, negative prices, invalid calendar dates, unsafe image paths, and live listings without photos. Before publishing, inspect desktop and mobile layouts, the two separate availability pages, prices, item links, gallery and QR readability.
 
 ## Deployment
 

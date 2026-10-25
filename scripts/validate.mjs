@@ -26,7 +26,6 @@ export function validate(config) {
     "upcoming",
     "reserved",
     "sold",
-    "contact",
     "empty",
     "demo",
     "photo",
@@ -34,13 +33,11 @@ export function validate(config) {
     "negotiable",
     "availability",
     "description",
-    "close",
     "share",
     "copied",
     "copyFailed",
     "qrPending",
-    "wechatHint",
-    "qrHint",
+    "qrAlt",
     "datePrefix",
     "dateSuffix",
     "previous",
@@ -49,8 +46,7 @@ export function validate(config) {
   for (const key of requiredLabels)
     require(typeof config.labels[key] === "string" &&
       config.labels[key].length > 0, `Missing label: ${key}`);
-  require(typeof config.wechat === "string" &&
-    typeof config.qrImage === "string", "Invalid contact fields");
+  require(typeof config.qrImage === "string", "Invalid QR image field");
   const imagePath = (value) =>
     /^\/media\/[A-Za-z0-9_/-]+\.(jpg|jpeg|png|webp)$/i.test(value) &&
     !value.includes("..") &&

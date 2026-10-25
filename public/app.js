@@ -175,8 +175,6 @@ function openItem(item) {
   );
   if (item.negotiable)
     copy.append(el("p", "detail-category", config.labels.negotiable));
-  const contact = el("button", "primary", config.labels.contact);
-  contact.addEventListener("click", openContact);
   const share = el("button", "secondary", config.labels.share);
   share.addEventListener("click", async () => {
     try {
@@ -186,16 +184,13 @@ function openItem(item) {
       toast(config.labels.copyFailed);
     }
   });
-  copy.append(contact, share);
+  copy.append(share);
   layout.append(gallery, copy);
   $("#item-detail").replaceChildren(layout);
   renderGallery();
   const dialog = $("#item-dialog");
   dialog.setAttribute("aria-labelledby", "detail-title");
   if (!dialog.open) dialog.showModal();
-}
-function openContact() {
-  $("#contact-dialog").showModal();
 }
 function toast(message) {
   clearTimeout(toastTimer);
@@ -225,16 +220,12 @@ async function init() {
     .setAttribute("aria-current", "page");
   $("#later-note").hidden = !isLaterPage;
   $("#later-note").textContent = config.laterDescription;
-  $("#brand-title").textContent = config.title;
   $("#headline").textContent = config.subtitle;
   $("#description").textContent = config.description;
   $("#pickup").textContent = config.pickup;
   $("#demo-notice").hidden = !config.demo;
   $("#demo-notice").textContent = config.labels.demo;
   $("#empty").textContent = config.labels.empty;
-  document
-    .querySelectorAll("[data-contact]")
-    .forEach((button) => button.addEventListener("click", openContact));
   document.querySelectorAll("dialog").forEach((dialog) => {
     dialog
       .querySelector("[data-close]")
@@ -256,32 +247,21 @@ async function init() {
     if (location.hash.startsWith("#item="))
       history.replaceState(null, "", location.pathname + location.search);
   });
-  $("#contact-dialog").setAttribute("aria-label", config.labels.contact);
   if (config.qrImage) {
     const img = el("img");
     img.src = config.qrImage;
-    img.alt = config.labels.contact;
-    $("#qr").append(img);
-    const topImage = img.cloneNode();
-    $("#intro-contact").append(topImage);
+    img.alt = config.labels.qrAlt;
+    img.width = 180;
+    img.height = 180;
+    $("#intro-qr").append(img);
   } else {
     const placeholder = el("div", "qr-placeholder");
     placeholder.append(
       el("span", "", "⌘"),
       document.createTextNode(config.labels.qrPending),
     );
-    $("#qr").append(placeholder);
-    $("#intro-contact").append(
-      el("span", "qr-symbol", "⌘"),
-      el("strong", "", config.labels.contact),
-      el("span", "", config.labels.wechatHint),
-    );
+    $("#intro-qr").append(placeholder);
   }
-  $("#wechat-id").textContent = config.wechat;
-  $("#wechat-id").hidden = !config.wechat;
-  $("#wechat-hint").textContent = config.qrImage
-    ? config.labels.qrHint
-    : config.labels.wechatHint;
   window.addEventListener("hashchange", syncHash);
   window.addEventListener("focus", render);
   render();
