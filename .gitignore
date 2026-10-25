@@ -1,4 +1,6 @@
 node_modules/
+.astro/
+public/media/
 dist/
 site.local.json
 assets.local/

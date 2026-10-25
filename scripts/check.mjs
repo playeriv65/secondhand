@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { validate } from "./validate.mjs";
-import { localDay, itemsForPage, saleState } from "../public/availability.js";
+import { localDay, itemsForPage, saleState } from "../src/lib/availability.mjs";
 const config = JSON.parse(
   await readFile(
     new URL("../content/site.example.json", import.meta.url),

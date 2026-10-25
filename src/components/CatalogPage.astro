@@ -1,0 +1,90 @@
+---
+import ItemCard from "./ItemCard.astro";
+import { catalog } from "../lib/catalog.mjs";
+import { localDay, itemsForPage } from "../lib/availability.mjs";
+import "../styles/global.css";
+const { later = false } = Astro.props;
+const day = localDay(catalog.timeZone);
+const title = later ? `${catalog.title} · 毕业后预计出` : catalog.title;
+const labels = Object.fromEntries(
+  ["available", "upcoming", "reserved", "sold"].map((key) => [
+    key,
+    catalog.labels[key],
+  ]),
+);
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f5ef" />
+    <meta name="description" content={catalog.description} />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body
+    data-page={later ? "later" : "now"}
+    data-time-zone={catalog.timeZone}
+    data-labels={JSON.stringify(labels)}
+  >
+    <main>
+      <section class="intro" aria-label="交易说明">
+        <div class="intro-copy">
+          <p id="description">{catalog.description}</p>
+          <p class="pickup">{catalog.pickup}</p>
+        </div>
+        <div class="intro-qr">
+          {catalog.qrImage ? (
+            <img
+              src={catalog.qrImage}
+              alt={catalog.labels.qrAlt}
+              width="180"
+              height="180"
+            />
+          ) : (
+            <div class="qr-placeholder">{catalog.labels.qrPending}</div>
+          )}
+        </div>
+      </section>
+      <nav class="pages" aria-label="出售时间">
+        <a href="/" aria-current={!later ? "page" : undefined}>
+          现在可出
+        </a>
+        <a href="/later.html" aria-current={later ? "page" : undefined}>
+          毕业后预计出 <span>↗</span>
+        </a>
+      </nav>
+      {later && <p class="later-note">{catalog.laterDescription}</p>}
+      {catalog.demo && <div class="demo-notice">{catalog.labels.demo}</div>}
+      <section aria-label="我的闲置物品">
+        <div class="grid">
+          {catalog.items.map((item) => (
+            <ItemCard
+              item={item}
+              day={day}
+              hidden={
+                Boolean(item.availableFrom && item.availableFrom > day) !==
+                later
+              }
+            />
+          ))}
+        </div>
+        <p
+          id="empty"
+          class="empty"
+          hidden={itemsForPage(catalog.items, later, day).length > 0}
+        >
+          {catalog.labels.empty}
+        </p>
+      </section>
+      <footer>
+        <a href="#">回到顶部 ↑</a>
+      </footer>
+    </main>
+    <script>
+      import "../scripts/availability.mjs";
+    </script>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+---
+import { catalog, availability, priceText } from "../lib/catalog.mjs";
+import { saleState } from "../lib/availability.mjs";
+const { item, day, hidden } = Astro.props;
+const status = saleState(item, day);
+const illustration = [
+  "lamp",
+  "coffee",
+  "chair",
+  "mugs",
+  "books",
+  "storage",
+].includes(item.illustration)
+  ? item.illustration
+  : "storage";
+---
+
+<article
+  class:list={["item", status]}
+  hidden={hidden}
+  data-status={item.status}
+  data-available-from={item.availableFrom ?? ""}
+  aria-label={`${item.name}，${priceText(item)}`}
+>
+  <div class="item-photo" style={{ backgroundColor: item.color || "#e7e8de" }}>
+    {item.images.length ? (
+      <img src={item.images[0]} alt={item.name} loading="lazy" />
+    ) : (
+      <>
+        <img
+          class="demo-illustration"
+          src={`/illustrations/${illustration}.svg`}
+          alt=""
+        />
+        <span class="photo-label">
+          {catalog.demo ? "ILLUSTRATION / 示例插画" : catalog.labels.photo}
+        </span>
+      </>
+    )}
+    <span class:list={["badge", status]} data-badge>
+      {catalog.labels[status]}
+    </span>
+  </div>
+  <div class="item-info">
+    <div class="item-meta">{item.condition}</div>
+    <div class="item-title-row">
+      <h3>{item.name}</h3>
+      <span class="price">{priceText(item)}</span>
+    </div>
+    <p class="item-desc">{item.description}</p>
+    <div class="item-bottom">
+      <span data-availability>{availability(item, day)}</span>
+    </div>
+    {item.negotiable && (
+      <p class="item-negotiable">{catalog.labels.negotiable}</p>
+    )}
+  </div>
+  {item.images.length > 1 && (
+    <div class="extra-photos">
+      {item.images.slice(1).map((image) => (
+        <img src={image} alt={item.name} loading="lazy" />
+      ))}
+    </div>
+  )}
+</article>

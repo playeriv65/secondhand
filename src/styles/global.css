@@ -116,6 +116,12 @@ main {
   position: absolute;
   object-fit: cover;
 }
+.item-photo > img.demo-illustration {
+  position: static;
+  width: 72%;
+  height: 80%;
+  object-fit: contain;
+}
 .item-photo svg {
   width: 72%;
   height: 80%;

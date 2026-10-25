@@ -4,16 +4,24 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.mjs",
-    "dev": "node scripts/serve.mjs",
-    "check": "node --check public/app.js && node --check scripts/build.mjs && node --check scripts/serve.mjs && node scripts/check.mjs",
-    "format": "prettier --write public scripts content package.json README.md AGENTS.md",
-    "format:check": "prettier --check public scripts content package.json README.md AGENTS.md"
+    "predev": "node scripts/prepare.mjs",
+    "dev": "astro dev",
+    "prebuild": "node scripts/prepare.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "node --check scripts/prepare.mjs && node scripts/check.mjs",
+    "check:build": "node scripts/check-build.mjs",
+    "format": "prettier --write src scripts content public astro.config.mjs package.json README.md AGENTS.md",
+    "format:check": "prettier --check src scripts content public astro.config.mjs package.json README.md AGENTS.md"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.23.4"
   },
   "devDependencies": {
-    "prettier": "3.9.10"
+    "prettier": "3.9.10",
+    "prettier-plugin-astro": "1.1.2"
+  },
+  "dependencies": {
+    "astro": "7.4.2"
   }
 }
