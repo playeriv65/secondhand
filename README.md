@@ -49,6 +49,8 @@ Use an existing Nginx host. Copy only `dist/` into a new release directory, such
 
 Before deploying, check existing virtual hosts and do not replace unrelated configurations. Serve `site.json`, HTML, JavaScript and CSS with revalidation to avoid stale prices or status. Product links use `#item=<slug>` and remain valid as long as the item ID stays the same. WeChat preview cards use the catalog's generic title and description; individual rich previews are outside the scope of this static site.
 
+The template listens on IPv4. Check existing IPv6 listeners before enabling IPv6: an existing service on a specific IPv6 address can prevent Nginx from binding a wildcard IPv6 HTTPS listener. A passing `nginx -t` checks configuration syntax but does not prove that a reload bound every new socket. Verify the certificate actually served for the hostname after reload. For an immediate renewal test, use `certbot renew --cert-name <domain> --dry-run --no-random-sleep-on-renew`.
+
 ## Updating
 
 Edit `site.local.json`, add sanitized photos, build, inspect the result, then publish a new static release. Source changes are committed to GitHub; the seller's runtime data is maintained separately and should be backed up separately.
