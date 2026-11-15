@@ -1,0 +1,144 @@
+<div id="catalog-editor" hidden>
+  <button id="editor-toggle" type="button">
+    管理员登录
+  </button>
+  <form id="editor-login" method="post" hidden>
+    <label>
+      密码{" "}
+      <input
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+      />
+    </label>
+    <button type="submit">登录</button>
+  </form>
+  <p id="editor-message" role="status" hidden></p>
+</div>
+
+<template id="item-editor-template">
+  <form class="item-editor" method="post">
+    <label>
+      商品名 <input name="name" maxlength="100" required />
+    </label>
+    <label>
+      价格（美元）{" "}
+      <input
+        name="price"
+        type="number"
+        inputmode="decimal"
+        min="0"
+        max="99999999.99"
+        step="0.01"
+        required
+      />
+    </label>
+    <label>
+      描述{" "}
+      <textarea
+        name="description"
+        maxlength="3000"
+        rows="4"
+        required
+      ></textarea>
+    </label>
+    <label>
+      出售时间
+      <select name="timing">
+        <option value="now">现在可出</option>
+        <option value="later">预计以后出</option>
+      </select>
+    </label>
+    <label hidden>
+      预计日期 <input name="availableFrom" type="date" />
+    </label>
+    <label>
+      拍照{" "}
+      <input name="camera" type="file" accept="image/*" capture="environment" />
+    </label>
+    <label>
+      相册 <input name="album" type="file" accept="image/*" multiple />
+    </label>
+    <p class="photo-help" hidden>
+      选择新照片会替换现有照片。
+    </p>
+    <div class="editor-actions">
+      <button type="submit">发布</button>
+      <button type="button" data-cancel>
+        取消
+      </button>
+    </div>
+    <p role="status" hidden></p>
+  </form>
+</template>
+
+<script>
+  import "../scripts/editor.mjs";
+</script>
+
+<style is:global>
+  #catalog-editor {
+    text-align: left;
+  }
+  #editor-login,
+  .item-editor {
+    display: grid;
+    gap: 0.8rem;
+    padding: 1rem;
+    color: #252821;
+    text-align: left;
+  }
+  #catalog-editor [hidden],
+  .item-editor [hidden] {
+    display: none;
+  }
+  #catalog-editor label,
+  .item-editor label {
+    display: grid;
+    gap: 0.25rem;
+    font-weight: 600;
+  }
+  #catalog-editor :is(input, button),
+  .item-editor :is(input, textarea, select, button),
+  .item-edit {
+    font: inherit;
+    font-size: 1rem;
+    min-height: 2.75rem;
+    border: 1px solid #a5a99a;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #fff;
+    color: #252821;
+  }
+  #catalog-editor button,
+  .item-editor button,
+  .item-edit {
+    cursor: pointer;
+  }
+  #catalog-editor button,
+  .item-editor input {
+    min-width: 0;
+  }
+  .item-edit {
+    margin: 0 1rem 1rem;
+  }
+  .item-editor button[type="submit"],
+  #editor-login button {
+    background: #284a36;
+    color: white;
+  }
+  .item-editor textarea {
+    resize: vertical;
+  }
+  .editor-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .item-editor p {
+    margin: 0;
+  }
+  .new-item {
+    margin-bottom: 1.25rem;
+  }
+</style>

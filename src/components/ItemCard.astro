@@ -18,6 +18,7 @@ const illustration = [
 <article
   class:list={["item", status]}
   hidden={hidden}
+  data-id={item.id}
   data-status={item.status}
   data-available-from={item.availableFrom ?? ""}
   aria-label={`${item.name}，${priceText(item)}`}

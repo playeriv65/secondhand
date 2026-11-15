@@ -29,7 +29,11 @@ for (const [file, later] of [
       "Description missing from generated HTML",
     );
   }
-  assert.ok(!/<(?:button|dialog|h1)\b/.test(html));
+  assert.ok(!/<(?:dialog|h1)\b/.test(html));
+  assert.ok(
+    !/<article\b[^>]*>[\s\S]*?<button\b[^>]*>[\s\S]*?<\/article>/.test(html),
+  );
+  assert.ok(/<div\b(?=[^>]*id="catalog-editor")(?=[^>]*\bhidden\b)/.test(html));
   assert.ok(!html.includes("/site.json"));
   assert.ok(!/name="generator"/.test(html));
   assert.ok(

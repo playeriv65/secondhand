@@ -50,9 +50,11 @@ export function validate(config) {
     require(/^[a-z0-9][a-z0-9-]*$/.test(item.id) &&
       !ids.has(item.id), `Invalid or duplicate item ID: ${item.id}`);
     ids.add(item.id);
-    for (const key of ["name", "description", "condition"])
+    for (const key of ["name", "description"])
       require(typeof item[key] === "string" &&
         item[key].length > 0, `Invalid ${key}: ${item.id}`);
+    require(typeof item.condition ===
+      "string", `Invalid condition: ${item.id}`);
     require(Number.isFinite(item.price) &&
       item.price >= 0, `Invalid price: ${item.id}`);
     require(["available", "reserved", "sold"].includes(

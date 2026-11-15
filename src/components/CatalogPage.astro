@@ -1,5 +1,6 @@
 ---
 import ItemCard from "./ItemCard.astro";
+import CatalogEditor from "./CatalogEditor.astro";
 import { catalog } from "../lib/catalog.mjs";
 import { localDay, itemsForPage } from "../lib/availability.mjs";
 import "../styles/global.css";
@@ -81,6 +82,7 @@ const labels = Object.fromEntries(
       </section>
       <footer>
         <a href="#">回到顶部 ↑</a>
+        <CatalogEditor />
       </footer>
     </main>
     <script>

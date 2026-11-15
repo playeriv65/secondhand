@@ -1,0 +1,20 @@
+[Unit]
+Description=Secondhand catalog editor
+After=network.target
+
+[Service]
+User=secondhand
+Group=secondhand
+WorkingDirectory=/srv/secondhand/editor/app
+EnvironmentFile=/etc/secondhand/editor.env
+ExecStart=/srv/secondhand/editor/runtime/node_modules/node/bin/node scripts/admin/server.mjs
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/secondhand/editor
+UMask=0022
+
+[Install]
+WantedBy=multi-user.target
