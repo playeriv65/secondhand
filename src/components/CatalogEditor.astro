@@ -1,19 +1,4 @@
 <div id="catalog-editor" hidden>
-  <button id="editor-toggle" type="button">
-    管理员登录
-  </button>
-  <form id="editor-login" method="post" hidden>
-    <label>
-      密码{" "}
-      <input
-        name="password"
-        type="password"
-        autocomplete="current-password"
-        required
-      />
-    </label>
-    <button type="submit">登录</button>
-  </form>
   <p id="editor-message" role="status" hidden></p>
 </div>
 
@@ -74,71 +59,6 @@
 </template>
 
 <script>
+  import "../styles/editor.css";
   import "../scripts/editor.mjs";
 </script>
-
-<style is:global>
-  #catalog-editor {
-    text-align: left;
-  }
-  #editor-login,
-  .item-editor {
-    display: grid;
-    gap: 0.8rem;
-    padding: 1rem;
-    color: #252821;
-    text-align: left;
-  }
-  #catalog-editor [hidden],
-  .item-editor [hidden] {
-    display: none;
-  }
-  #catalog-editor label,
-  .item-editor label {
-    display: grid;
-    gap: 0.25rem;
-    font-weight: 600;
-  }
-  #catalog-editor :is(input, button),
-  .item-editor :is(input, textarea, select, button),
-  .item-edit {
-    font: inherit;
-    font-size: 1rem;
-    min-height: 2.75rem;
-    border: 1px solid #a5a99a;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: #fff;
-    color: #252821;
-  }
-  #catalog-editor button,
-  .item-editor button,
-  .item-edit {
-    cursor: pointer;
-  }
-  #catalog-editor button,
-  .item-editor input {
-    min-width: 0;
-  }
-  .item-edit {
-    margin: 0 1rem 1rem;
-  }
-  .item-editor button[type="submit"],
-  #editor-login button {
-    background: #284a36;
-    color: white;
-  }
-  .item-editor textarea {
-    resize: vertical;
-  }
-  .editor-actions {
-    display: flex;
-    gap: 0.5rem;
-  }
-  .item-editor p {
-    margin: 0;
-  }
-  .new-item {
-    margin-bottom: 1.25rem;
-  }
-</style>

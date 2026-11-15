@@ -1,13 +1,15 @@
 import { access, cp, mkdir, rm } from "node:fs/promises";
 import path from "node:path";
+import { listedItems } from "../src/lib/availability.mjs";
 import { catalog, root } from "../src/lib/catalog.mjs";
 
 const media = path.join(root, "public/media");
 const images = [
   ...new Set(
-    [catalog.qrImage, ...catalog.items.flatMap((item) => item.images)].filter(
-      Boolean,
-    ),
+    [
+      catalog.qrImage,
+      ...listedItems(catalog.items).flatMap((item) => item.images),
+    ].filter(Boolean),
   ),
 ];
 for (const image of images)

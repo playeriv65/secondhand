@@ -13,6 +13,10 @@ const files = catalogFiles(
 );
 await files.bootstrap();
 if (process.argv.includes("--bootstrap")) process.exit(0);
+if (process.argv.includes("--rebuild")) {
+  await files.rebuild();
+  process.exit(0);
+}
 
 const credentials = JSON.parse(
   await readFile(process.env.SECONDHAND_AUTH_FILE, "utf8"),
@@ -62,6 +66,19 @@ const server = createServer(async (req, res) => {
       return reply(res, 200, {}, { "Set-Cookie": sessions.clear() });
     if (pathname === `${prefix}/items` && req.method === "GET")
       return reply(res, 200, await catalog.list());
+
+    const unpublish =
+      /^\/api\/catalog\/items\/([a-z0-9][a-z0-9-]*)\/unpublish$/.exec(pathname);
+    if (unpublish && req.method === "POST") {
+      const fields = Object.fromEntries(
+        new URLSearchParams((await body(req, 4096)).toString()),
+      );
+      return reply(
+        res,
+        200,
+        await catalog.save(unpublish[1], fields, [], { unpublish: true }),
+      );
+    }
 
     const route = /^\/api\/catalog\/items(?:\/([a-z0-9][a-z0-9-]*))?$/.exec(
       pathname,

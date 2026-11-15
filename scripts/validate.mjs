@@ -1,3 +1,8 @@
+export function normalizeCatalog(config) {
+  const { demo, ...catalog } = config;
+  return demo ? { ...catalog, items: [] } : catalog;
+}
+
 export function validate(config) {
   const require = (ok, message) => {
     if (!ok) throw new Error(message);
@@ -17,23 +22,8 @@ export function validate(config) {
     currency: config.currency,
   });
   new Intl.DateTimeFormat(config.locale, { timeZone: config.timeZone });
-  require(typeof config.demo === "boolean", "demo must be a boolean");
   require(config.labels && typeof config.labels === "object", "Missing labels");
-  const requiredLabels = [
-    "available",
-    "upcoming",
-    "reserved",
-    "sold",
-    "empty",
-    "demo",
-    "photo",
-    "free",
-    "negotiable",
-    "qrPending",
-    "qrAlt",
-    "datePrefix",
-    "dateSuffix",
-  ];
+  const requiredLabels = ["empty", "free", "qrPending", "qrAlt", "datePrefix"];
   for (const key of requiredLabels)
     require(typeof config.labels[key] === "string" &&
       config.labels[key].length > 0, `Missing label: ${key}`);
@@ -53,8 +43,6 @@ export function validate(config) {
     for (const key of ["name", "description"])
       require(typeof item[key] === "string" &&
         item[key].length > 0, `Invalid ${key}: ${item.id}`);
-    require(typeof item.condition ===
-      "string", `Invalid condition: ${item.id}`);
     require(Number.isFinite(item.price) &&
       item.price >= 0, `Invalid price: ${item.id}`);
     require(["available", "reserved", "sold"].includes(
@@ -67,12 +55,6 @@ export function validate(config) {
           item.availableFrom), `Invalid availability date: ${item.id}`);
     require(Array.isArray(item.images) &&
       item.images.every(imagePath), `Invalid images: ${item.id}`);
-    require(typeof item.negotiable ===
-      "boolean", `Invalid negotiable flag: ${item.id}`);
-    require(!item.color ||
-      /^#[0-9a-f]{6}$/i.test(item.color), `Invalid color: ${item.id}`);
-    if (!config.demo)
-      require(item.images.length >
-        0, `Live item needs a real photo: ${item.id}`);
+    require(item.images.length > 0, "Item needs a photo: " + item.id);
   }
 }

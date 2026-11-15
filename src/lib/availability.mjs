@@ -9,15 +9,14 @@ export function localDay(timeZone, now = new Date()) {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
-export function itemsForPage(items, later, day) {
-  return items.filter(
-    (item) => Boolean(item.availableFrom && item.availableFrom > day) === later,
-  );
+export function listedItems(items) {
+  return items.filter((item) => item.status !== "sold");
 }
 
-export function saleState(item, day) {
-  if (item.status !== "available") return item.status;
-  return item.availableFrom && item.availableFrom > day
-    ? "upcoming"
-    : "available";
+export function isUpcoming(item, day) {
+  return Boolean(item.availableFrom && item.availableFrom > day);
+}
+
+export function itemsForPage(items, later, day) {
+  return listedItems(items).filter((item) => isUpcoming(item, day) === later);
 }

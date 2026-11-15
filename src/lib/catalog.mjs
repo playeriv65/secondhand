@@ -1,7 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { validate } from "../../scripts/validate.mjs";
-import { saleState } from "./availability.mjs";
+import { normalizeCatalog, validate } from "../../scripts/validate.mjs";
 
 export const root = path.resolve(process.cwd());
 let source;
@@ -11,7 +10,7 @@ try {
   if (error.code !== "ENOENT") throw error;
   source = await readFile(path.join(root, "content/site.example.json"), "utf8");
 }
-export const catalog = JSON.parse(source);
+export const catalog = normalizeCatalog(JSON.parse(source));
 validate(catalog);
 
 export function priceText(item) {
@@ -26,14 +25,11 @@ export function priceText(item) {
       }).format(item.price);
 }
 
-export function availability(item, day) {
-  if (saleState(item, day) !== "upcoming")
-    return catalog.labels[saleState(item, day)];
-  const date = new Intl.DateTimeFormat(catalog.locale, {
+export function dateText(date) {
+  return new Intl.DateTimeFormat(catalog.locale, {
     month: "long",
     day: "numeric",
     year: "numeric",
     timeZone: "UTC",
-  }).format(new Date(`${item.availableFrom}T12:00:00Z`));
-  return `${catalog.labels.datePrefix} ${date} ${catalog.labels.dateSuffix}`;
+  }).format(new Date(date + "T12:00:00Z"));
 }

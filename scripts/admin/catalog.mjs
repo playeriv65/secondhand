@@ -1,5 +1,9 @@
 import { randomUUID, createHash } from "node:crypto";
-import { localDay } from "../../src/lib/availability.mjs";
+import {
+  isUpcoming,
+  listedItems,
+  localDay,
+} from "../../src/lib/availability.mjs";
 import { validate } from "../validate.mjs";
 
 export const maxPhotos = 8;
@@ -26,22 +30,35 @@ export function catalogService({ read, publish }) {
   return {
     async list() {
       const catalog = await read();
-      return catalog.items.map((item) => ({
+      return listedItems(catalog.items).map((item) => ({
         ...item,
         version: versionOf(item),
       }));
     },
-    async save(id, fields, photos) {
+    async save(id, fields, photos, { unpublish = false } = {}) {
       if (publishing)
         throw new CatalogError(409, "正在发布另一件商品，请稍后重试。");
       publishing = true;
       try {
         const catalog = await read();
-        const previous = id && catalog.items.find((item) => item.id === id);
+        const previous =
+          id && listedItems(catalog.items).find((item) => item.id === id);
         if (id && !previous)
           throw new CatalogError(404, "找不到这件商品，请刷新。");
         if (previous && fields.version !== versionOf(previous))
           throw new CatalogError(409, "这件商品已更新，请刷新后再编辑。");
+        if (unpublish) {
+          const items = catalog.items.map((item) =>
+            item.id === id ? { ...item, status: "sold" } : item,
+          );
+          await publish({ ...catalog, items }, []);
+          return {
+            id,
+            href: isUpcoming(previous, localDay(catalog.timeZone))
+              ? "/later.html"
+              : "/",
+          };
+        }
         const name = required(
           fields.name,
           100,
@@ -91,22 +108,18 @@ export function catalogService({ read, publish }) {
           name,
           description,
           price: Number(price),
-          condition: previous?.condition ?? "",
           status: previous?.status ?? "available",
-          negotiable: previous?.negotiable ?? false,
           availableFrom,
           images: uploads.length
             ? uploads.map((photo) => photo.path)
             : previous.images,
         };
-        const items = catalog.demo ? [] : catalog.items;
+        const items = catalog.items;
         const next = {
           ...catalog,
-          demo: false,
-          items:
-            id && !catalog.demo
-              ? items.map((entry) => (entry.id === id ? item : entry))
-              : [item, ...items],
+          items: id
+            ? items.map((entry) => (entry.id === id ? item : entry))
+            : [item, ...items],
         };
         validate(next);
         await publish(next, uploads);

@@ -1,26 +1,54 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { validate } from "./validate.mjs";
-import { localDay, itemsForPage, saleState } from "../src/lib/availability.mjs";
-const config = JSON.parse(
+import { normalizeCatalog, validate } from "./validate.mjs";
+import {
+  isUpcoming,
+  itemsForPage,
+  localDay,
+} from "../src/lib/availability.mjs";
+
+const example = JSON.parse(
   await readFile(
     new URL("../content/site.example.json", import.meta.url),
     "utf8",
   ),
 );
+validate(example);
+assert.deepEqual(example.items, []);
+
+const current = {
+  id: "lamp",
+  name: "Lamp",
+  description: "Works well.",
+  price: 12,
+  status: "available",
+  availableFrom: null,
+  images: ["/media/lamp.webp"],
+};
+const future = {
+  ...current,
+  id: "chair",
+  name: "Chair",
+  availableFrom: "2027-05-20",
+  images: ["/media/chair-front.webp", "/media/chair-back.webp"],
+};
+const sold = { ...current, id: "desk", status: "sold" };
+const config = { ...example, items: [current, future, sold] };
 validate(config);
+assert.deepEqual(normalizeCatalog({ ...config, demo: true }), example);
+assert.deepEqual(normalizeCatalog({ ...config, demo: false }), config);
+
 const before = localDay("America/Chicago", new Date("2027-05-20T04:59:59Z"));
 const after = localDay("America/Chicago", new Date("2027-05-20T05:00:00Z"));
 assert.equal(before, "2027-05-19");
 assert.equal(after, "2027-05-20");
-const future = config.items.find((item) => item.availableFrom);
-assert.equal(itemsForPage([future], true, before).length, 1);
-assert.equal(itemsForPage([future], false, before).length, 0);
-assert.equal(itemsForPage([future], false, after).length, 1);
-assert.equal(itemsForPage([future], true, after).length, 0);
-assert.equal(saleState(future, before), "upcoming");
-assert.equal(saleState(future, after), "available");
-assert.equal(saleState({ ...future, status: "reserved" }, after), "reserved");
+assert.equal(isUpcoming(future, before), true);
+assert.equal(isUpcoming(future, after), false);
+assert.deepEqual(itemsForPage(config.items, false, before), [current]);
+assert.deepEqual(itemsForPage(config.items, true, before), [future]);
+assert.deepEqual(itemsForPage(config.items, false, after), [current, future]);
+assert.deepEqual(itemsForPage(config.items, true, after), []);
+
 for (const change of [
   (value) => {
     value.items[0].price = -1;
@@ -35,13 +63,11 @@ for (const change of [
     value.items[1].id = value.items[0].id;
   },
   (value) => {
-    value.demo = false;
+    value.items[0].images = [];
   },
 ]) {
   const value = structuredClone(config);
   change(value);
   assert.throws(() => validate(value));
 }
-console.log(
-  "Catalog validation passed, including invalid dates, prices, paths, duplicate IDs and missing live photos.",
-);
+console.log("Catalog validation and listing visibility checks passed.");

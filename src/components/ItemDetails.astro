@@ -1,0 +1,30 @@
+<dialog id="item-details" aria-labelledby="detail-name">
+  <button class="detail-close" type="button" aria-label="关闭">
+    ×
+  </button>
+  <div class="detail-photo">
+    <img alt="" />
+    <div class="detail-controls" hidden>
+      <button type="button" data-previous aria-label="上一张">
+        ‹
+      </button>
+      <span class="detail-count" aria-live="polite"></span>
+      <button type="button" data-next aria-label="下一张">
+        ›
+      </button>
+    </div>
+  </div>
+  <div class="detail-copy">
+    <div class="item-title-row">
+      <h2 id="detail-name"></h2>
+      <span class="price"></span>
+    </div>
+    <p class="item-desc"></p>
+    <p class="item-date" hidden></p>
+  </div>
+</dialog>
+
+<script>
+  import "../scripts/details.mjs";
+  import "../styles/details.css";
+</script>

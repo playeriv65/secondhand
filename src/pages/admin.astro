@@ -1,0 +1,68 @@
+---
+import "../styles/global.css";
+import "../styles/editor.css";
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>管理员登录</title>
+  </head>
+  <body>
+    <main class="login-page">
+      <form id="editor-login" method="post" hidden>
+        <label>
+          管理员密码{" "}
+          <input
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+        </label>
+        <button type="submit">登录</button>
+        <p id="editor-message" role="status" hidden></p>
+      </form>
+    </main>
+    <script>
+      import { request, sessionFlag, show } from "../scripts/admin-client.mjs";
+
+      const login = document.querySelector("#editor-login");
+      const message = document.querySelector("#editor-message");
+      login.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const submit = login.querySelector("button");
+        submit.disabled = true;
+        try {
+          await request("login", {
+            method: "POST",
+            body: new URLSearchParams(new FormData(login)),
+          });
+          localStorage.setItem(sessionFlag, "1");
+          window.location.replace("/");
+        } catch (error) {
+          show(message, error.message);
+          submit.disabled = false;
+        }
+      });
+
+      async function start() {
+        if (localStorage.getItem(sessionFlag)) {
+          try {
+            await request("items");
+            window.location.replace("/");
+            return;
+          } catch {
+            localStorage.removeItem(sessionFlag);
+          }
+        }
+        login.hidden = false;
+      }
+
+      void start();
+    </script>
+  </body>
+</html>

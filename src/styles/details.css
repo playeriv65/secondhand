@@ -1,0 +1,84 @@
+article[data-images] {
+  cursor: pointer;
+}
+.item-open {
+  border: 0;
+  padding: 0;
+  text-align: left;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+body:has(#item-details[open]) {
+  overflow: hidden;
+}
+#item-details {
+  position: fixed;
+  width: min(100% - 1.5rem, 46rem);
+  max-height: calc(100dvh - 1.5rem);
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: inherit;
+}
+#item-details::backdrop {
+  background: rgb(0 0 0 / 60%);
+}
+.detail-photo {
+  position: relative;
+  background: #eeeee8;
+}
+.detail-photo img {
+  display: block;
+  width: 100%;
+  height: min(58dvh, 34rem);
+  object-fit: contain;
+  touch-action: pan-y pinch-zoom;
+}
+.detail-close,
+.detail-controls button {
+  display: grid;
+  place-items: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 3rem;
+  background: #fff;
+  color: #282820;
+  cursor: pointer;
+  font-size: 1.75rem;
+}
+.detail-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 1;
+}
+.detail-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+}
+.detail-count {
+  font-size: 0.875rem;
+}
+.detail-copy {
+  padding: 1rem 1.25rem 1.25rem;
+}
+.detail-copy h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+.detail-copy .item-desc {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.detail-copy .item-date {
+  font-size: 0.92rem;
+}

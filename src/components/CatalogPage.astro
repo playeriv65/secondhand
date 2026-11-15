@@ -1,18 +1,18 @@
 ---
 import ItemCard from "./ItemCard.astro";
+import ItemDetails from "./ItemDetails.astro";
 import CatalogEditor from "./CatalogEditor.astro";
 import { catalog } from "../lib/catalog.mjs";
-import { localDay, itemsForPage } from "../lib/availability.mjs";
+import {
+  localDay,
+  itemsForPage,
+  isUpcoming,
+  listedItems,
+} from "../lib/availability.mjs";
 import "../styles/global.css";
 const { later = false } = Astro.props;
 const day = localDay(catalog.timeZone);
 const title = later ? `${catalog.title} · 毕业后预计出` : catalog.title;
-const labels = Object.fromEntries(
-  ["available", "upcoming", "reserved", "sold"].map((key) => [
-    key,
-    catalog.labels[key],
-  ]),
-);
 ---
 
 <!doctype html>
@@ -28,7 +28,7 @@ const labels = Object.fromEntries(
   <body
     data-page={later ? "later" : "now"}
     data-time-zone={catalog.timeZone}
-    data-labels={JSON.stringify(labels)}
+    data-title={catalog.title}
   >
     <main>
       <section class="intro" aria-label="交易说明">
@@ -50,25 +50,28 @@ const labels = Object.fromEntries(
         </div>
       </section>
       <nav class="pages" aria-label="出售时间">
-        <a href="/" aria-current={!later ? "page" : undefined}>
+        <a href="/" data-view="now" aria-current={!later ? "page" : undefined}>
           现在可出
         </a>
-        <a href="/later.html" aria-current={later ? "page" : undefined}>
+        <a
+          href="/later.html"
+          data-view="later"
+          aria-current={later ? "page" : undefined}
+        >
           毕业后预计出 <span>↗</span>
         </a>
       </nav>
-      {later && <p class="later-note">{catalog.laterDescription}</p>}
-      {catalog.demo && <div class="demo-notice">{catalog.labels.demo}</div>}
+      <p class="later-note" hidden={!later}>
+        {catalog.laterDescription}
+      </p>
       <section aria-label="我的闲置物品">
+        <CatalogEditor />
         <div class="grid">
-          {catalog.items.map((item) => (
+          {listedItems(catalog.items).map((item) => (
             <ItemCard
               item={item}
               day={day}
-              hidden={
-                Boolean(item.availableFrom && item.availableFrom > day) !==
-                later
-              }
+              hidden={isUpcoming(item, day) !== later}
             />
           ))}
         </div>
@@ -80,10 +83,7 @@ const labels = Object.fromEntries(
           {catalog.labels.empty}
         </p>
       </section>
-      <footer>
-        <a href="#">回到顶部 ↑</a>
-        <CatalogEditor />
-      </footer>
+      <ItemDetails />
     </main>
     <script>
       import "../scripts/availability.mjs";

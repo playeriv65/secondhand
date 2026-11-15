@@ -55,16 +55,17 @@ async function main() {
         "node scripts/admin/cli.mjs list --origin https://your-site",
         "node scripts/admin/cli.mjs add --origin https://your-site --name NAME --price USD --description TEXT [--date YYYY-MM-DD] --photo PATH",
         "node scripts/admin/cli.mjs edit ID --origin https://your-site [--name NAME] [--price USD] [--description TEXT] [--date YYYY-MM-DD|now] [--photo PATH]",
+        "node scripts/admin/cli.mjs unpublish ID --origin https://your-site",
       ].join("\n"),
     );
     return;
   }
   if (
-    !["list", "add", "edit"].includes(action) ||
-    Boolean(id) !== (action === "edit") ||
+    !["list", "add", "edit", "unpublish"].includes(action) ||
+    Boolean(id) !== ["edit", "unpublish"].includes(action) ||
     extra.length
   )
-    throw new Error("Use list, add, or edit ID. See --help.");
+    throw new Error("Use list, add, edit ID, or unpublish ID. See --help.");
 
   const origin = new URL(values.origin ?? process.env.SECONDHAND_ORIGIN).origin;
   let cookie = "";
@@ -92,6 +93,15 @@ async function main() {
 
   const item = id && items.find((entry) => entry.id === id);
   if (id && !item) throw new Error("Item not found.");
+  if (action === "unpublish") {
+    const result = await call(
+      "items/" + item.id + "/unpublish",
+      "POST",
+      new URLSearchParams({ version: item.version }),
+    );
+    console.log(result.id + " " + origin + result.href);
+    return;
+  }
   const data = new FormData();
   for (const field of ["name", "price", "description"])
     data.set(field, values[field] ?? item?.[field] ?? "");

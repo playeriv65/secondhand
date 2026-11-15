@@ -1,30 +1,9 @@
+import { request, sessionFlag, show } from "./admin-client.mjs";
+
 const panel = document.querySelector("#catalog-editor");
-const toggle = document.querySelector("#editor-toggle");
-const login = document.querySelector("#editor-login");
 const message = document.querySelector("#editor-message");
 const template = document.querySelector("#item-editor-template");
 const grid = document.querySelector(".grid");
-const sessionFlag = "secondhand-editor";
-
-function show(status, text) {
-  status.textContent = text;
-  status.hidden = !text;
-}
-
-async function request(path, options) {
-  const res = await fetch(`/api/catalog/${path}`, options);
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(
-      data.error ??
-        (res.status === 429
-          ? "尝试次数过多，请稍后再试。"
-          : "操作失败，请稍后再试。"),
-    );
-  }
-  return data;
-}
-
 function openForm(item, card, trigger) {
   const form = template.content.firstElementChild.cloneNode(true);
   const fields = form.elements;
@@ -110,10 +89,7 @@ async function editMode() {
   const items = new Map(
     (await request("items")).map((item) => [item.id, item]),
   );
-  login.hidden = true;
-  show(message, "");
-  toggle.textContent = "退出编辑";
-  toggle.onclick = async () => {
+  const logout = button("退出编辑", async () => {
     try {
       await request("logout", { method: "POST" });
       localStorage.removeItem(sessionFlag);
@@ -121,48 +97,40 @@ async function editMode() {
     } catch (error) {
       show(message, error.message);
     }
-  };
+  });
   for (const card of grid.querySelectorAll("article[data-id]")) {
     const item = items.get(card.dataset.id);
     if (!item) continue;
     const trigger = button("编辑", () => openForm(item, card, trigger));
-    card.append(trigger);
+    const remove = button("下架", async () => {
+      if (!window.confirm("下架这件商品？")) return;
+      remove.disabled = true;
+      try {
+        await request("items/" + item.id + "/unpublish", {
+          method: "POST",
+          body: new URLSearchParams({ version: item.version }),
+        });
+        window.location.reload();
+      } catch (error) {
+        show(message, error.message);
+        remove.disabled = false;
+      }
+    });
+    const controls = document.createElement("div");
+    controls.className = "card-editor-actions";
+    controls.append(trigger, remove);
+    card.append(controls);
   }
   const add = button("添加商品", () => {
     const card = document.createElement("section");
     card.className = "item new-item";
-    add.after(card);
+    grid.before(card);
     openForm(null, card, add);
   });
-  grid.before(add);
+  panel.prepend(add, logout);
+  panel.hidden = false;
 }
 
-panel.hidden = false;
-toggle.onclick = () => {
-  login.hidden = !login.hidden;
-  if (!login.hidden) login.elements.namedItem("password").focus();
-};
-login.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const submit = login.querySelector("button");
-  submit.disabled = true;
-  try {
-    await request("login", {
-      method: "POST",
-      body: new URLSearchParams(new FormData(login)),
-    });
-    login.reset();
-    localStorage.setItem(sessionFlag, "1");
-    await editMode();
-    document
-      .querySelector(".grid")
-      .previousElementSibling.scrollIntoView({ block: "nearest" });
-  } catch (error) {
-    show(message, error.message);
-  } finally {
-    submit.disabled = false;
-  }
-});
 if (localStorage.getItem(sessionFlag)) {
   editMode().catch(() => localStorage.removeItem(sessionFlag));
 }

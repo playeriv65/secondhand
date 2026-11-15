@@ -3,6 +3,7 @@ import { execFile } from "node:child_process";
 import {
   cp,
   mkdir,
+  mkdtemp,
   readFile,
   readdir,
   realpath,
@@ -12,9 +13,11 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import sharp from "sharp";
+import { normalizeCatalog } from "../validate.mjs";
 import { CatalogError } from "./catalog.mjs";
 
 const run = promisify(execFile);
@@ -24,6 +27,75 @@ const astroBin = path.resolve(
   path.dirname(astroManifest),
   require(astroManifest).bin.astro,
 );
+
+const maxInputPixels = 50_000_000;
+
+function encodePhoto(source, options = {}) {
+  return sharp(source, { limitInputPixels: maxInputPixels, ...options })
+    .autoOrient()
+    .resize({
+      width: 1600,
+      height: 1600,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .webp({ quality: 82 })
+    .toBuffer();
+}
+
+async function convertHeic(source, pages, primary) {
+  let pixels = 0;
+  for (let page = 0; page < pages; page++) {
+    const { width, height } = await sharp(source, { page }).metadata();
+    pixels += width * height;
+    if (pixels > maxInputPixels)
+      throw new Error("HEIC image dimensions are too large.");
+  }
+
+  const directory = await mkdtemp(path.join(tmpdir(), "secondhand-heic-"));
+  try {
+    const input = path.join(directory, "source.heic");
+    const output = path.join(directory, "image.png");
+    await writeFile(input, source, { mode: 0o600 });
+    await run(
+      "heif-convert",
+      ["--quiet", "--png-compression-level", "1", input, output],
+      {
+        timeout: 20_000,
+        killSignal: "SIGKILL",
+        maxBuffer: 64 * 1024,
+      },
+    );
+    // Libheif applies the container orientation and numbers multi-image results from 1.
+    return await encodePhoto(
+      pages === 1
+        ? output
+        : path.join(directory, "image-" + (primary + 1) + ".png"),
+    );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}
+
+async function processPhoto(file) {
+  const source = Buffer.from(await file.arrayBuffer());
+  const {
+    format,
+    compression,
+    pages = 1,
+    pagePrimary = 0,
+  } = await sharp(source, {
+    limitInputPixels: maxInputPixels,
+  }).metadata();
+  if (!["jpeg", "png", "webp", "heif"].includes(format))
+    throw new Error("Unsupported photo format.");
+  try {
+    return await encodePhoto(source, { page: pagePrimary });
+  } catch (error) {
+    if (format !== "heif" || compression !== "hevc" || pages > 8) throw error;
+    return convertHeic(source, pages, pagePrimary);
+  }
+}
 
 export function catalogFiles(project, published) {
   const current = path.join(published, "current");
@@ -95,7 +167,12 @@ export function catalogFiles(project, published) {
       } catch (error) {
         if (error.code !== "ENOENT") throw error;
       }
-      await build(JSON.parse(await readFile(catalogFile, "utf8")));
+      await build(
+        normalizeCatalog(JSON.parse(await readFile(catalogFile, "utf8"))),
+      );
+    },
+    async rebuild() {
+      await this.publish(normalizeCatalog(await read()), []);
     },
     async publish(catalog, uploads) {
       const liveMedia = path.join(await currentRelease(), "www", "media");
@@ -109,26 +186,11 @@ export function catalogFiles(project, published) {
         const target = path.join(assets, upload.path.slice("/media/".length));
         let image;
         try {
-          const input = sharp(Buffer.from(await upload.file.arrayBuffer()), {
-            limitInputPixels: 50_000_000,
-          });
-          const { format } = await input.metadata();
-          if (!["jpeg", "png", "webp", "heif"].includes(format))
-            throw new Error("Unsupported photo format.");
-          image = await input
-            .autoOrient()
-            .resize({
-              width: 1600,
-              height: 1600,
-              fit: "inside",
-              withoutEnlargement: true,
-            })
-            .webp({ quality: 82 })
-            .toBuffer();
+          image = await processPhoto(upload.file);
         } catch {
           throw new CatalogError(
             400,
-            "照片无法读取，请用 JPEG、PNG 或 WebP 重试。",
+            "照片无法读取，请用 JPEG、PNG、WebP 或 HEIC 重试。",
           );
         }
         await mkdir(path.dirname(target), { recursive: true });
