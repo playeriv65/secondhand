@@ -139,6 +139,13 @@ main {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+
+.item .item-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
 .empty {
   text-align: center;
   padding: 55px 20px;
