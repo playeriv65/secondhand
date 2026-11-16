@@ -9,8 +9,11 @@ export function localDay(timeZone, now = new Date()) {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
-export function listedItems(items) {
-  return items.filter((item) => item.status !== "sold");
+export function orderedItems(items) {
+  return items.toSorted(
+    (left, right) =>
+      Number(left.status === "sold") - Number(right.status === "sold"),
+  );
 }
 
 export function isUpcoming(item, day) {
@@ -18,5 +21,5 @@ export function isUpcoming(item, day) {
 }
 
 export function itemsForPage(items, later, day) {
-  return listedItems(items).filter((item) => isUpcoming(item, day) === later);
+  return orderedItems(items).filter((item) => isUpcoming(item, day) === later);
 }

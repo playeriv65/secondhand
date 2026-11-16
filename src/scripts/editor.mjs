@@ -102,23 +102,26 @@ async function editMode() {
     const item = items.get(card.dataset.id);
     if (!item) continue;
     const trigger = button("编辑", () => openForm(item, card, trigger));
-    const remove = button("下架", async () => {
-      if (!window.confirm("下架这件商品？")) return;
-      remove.disabled = true;
-      try {
-        await request("items/" + item.id + "/unpublish", {
-          method: "POST",
-          body: new URLSearchParams({ version: item.version }),
-        });
-        window.location.reload();
-      } catch (error) {
-        show(message, error.message);
-        remove.disabled = false;
-      }
-    });
     const controls = document.createElement("div");
     controls.className = "card-editor-actions";
-    controls.append(trigger, remove);
+    controls.append(trigger);
+    if (item.status !== "sold") {
+      const markSold = button("标记已售出", async () => {
+        if (!window.confirm("标记这件商品为已售出？")) return;
+        markSold.disabled = true;
+        try {
+          await request("items/" + item.id + "/mark-sold", {
+            method: "POST",
+            body: new URLSearchParams({ version: item.version }),
+          });
+          window.location.reload();
+        } catch (error) {
+          show(message, error.message);
+          markSold.disabled = false;
+        }
+      });
+      controls.append(markSold);
+    }
     card.append(controls);
   }
   const add = button("添加商品", () => {

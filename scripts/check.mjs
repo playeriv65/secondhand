@@ -33,7 +33,7 @@ const future = {
   images: ["/media/chair-front.webp", "/media/chair-back.webp"],
 };
 const sold = { ...current, id: "desk", status: "sold" };
-const config = { ...example, items: [current, future, sold] };
+const config = { ...example, items: [sold, current, future] };
 validate(config);
 assert.deepEqual(normalizeCatalog({ ...config, demo: true }), example);
 assert.deepEqual(normalizeCatalog({ ...config, demo: false }), config);
@@ -44,9 +44,13 @@ assert.equal(before, "2027-05-19");
 assert.equal(after, "2027-05-20");
 assert.equal(isUpcoming(future, before), true);
 assert.equal(isUpcoming(future, after), false);
-assert.deepEqual(itemsForPage(config.items, false, before), [current]);
+assert.deepEqual(itemsForPage(config.items, false, before), [current, sold]);
 assert.deepEqual(itemsForPage(config.items, true, before), [future]);
-assert.deepEqual(itemsForPage(config.items, false, after), [current, future]);
+assert.deepEqual(itemsForPage(config.items, false, after), [
+  current,
+  future,
+  sold,
+]);
 assert.deepEqual(itemsForPage(config.items, true, after), []);
 
 for (const change of [

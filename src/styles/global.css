@@ -98,6 +98,20 @@ main {
   position: absolute;
   object-fit: cover;
 }
+.item-sold {
+  display: inline-block;
+  border-radius: 4px;
+  background: #f6f5ef;
+  color: #344131;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.item-photo > .item-sold {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
 .item-photo svg {
   width: 72%;
   height: 80%;

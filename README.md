@@ -20,7 +20,7 @@ Copy `content/site.example.json` to `site.local.json` and edit the copy. The loc
 - `pickup`: short public introduction with pickup and campus meeting arrangements.
 - `items`: unique slug, name, nonnegative USD price, description, status, date, and images.
 - `laterDescription`: introduction to the graduation items page. The home page shows items available now, while `/later.html` shows items with a future availability date. Items move to the current page when the date arrives.
-- `status`: `available`, `reserved`, or `sold`. Set `availableFrom` to `null` for immediate availability, or an ISO date such as `2027-05-20` for later pickup. Only future dates appear on cards. Items with status `sold` are omitted. Astro renders the initial list into HTML. The browser switches between the two URLs in place and moves items when the date arrives in `timeZone`. With JavaScript disabled, the links load separate pages and the lists reflect the build date.
+- `status`: `available`, `reserved`, or `sold`. Set `availableFrom` to `null` for immediate availability, or an ISO date such as `2027-05-20` for later pickup. Only future dates appear on cards. Sold items remain in their original list, after items that are still for sale. Astro renders the initial list into HTML. The browser switches between the two URLs in place and moves items when the date arrives in `timeZone`. With JavaScript disabled, the links load separate pages and the lists reflect the build date.
 - `images`: paths such as `/media/chair/front.webp`. Put the corresponding files in `assets.local/chair/front.webp`. Each listing requires at least one real photo.
 - `labels`, browser title, introduction, locale, currency, and timezone are configuration data. Keep seller-specific information out of application source.
 
@@ -42,7 +42,7 @@ Validation rejects duplicate IDs, negative prices, invalid calendar dates, unsaf
 
 ## Publishing items
 
-Open `/admin` in your phone browser and sign in. Add a new card or edit an existing one. Enter the name, USD price, and description, then choose immediate sale or a future date. The camera and album controls can be used together. Selecting new photos when editing replaces the existing set. The server accepts up to eight photos with a combined size of 32 MiB, converts them to WebP, and drops image metadata. Use **下架** to remove an item from both public lists.
+Open `/admin` in your phone browser and sign in. Add a new card or edit an existing one. Enter the name, USD price, and description, then choose immediate sale or a future date. The camera and album controls can be used together. Selecting new photos when editing replaces the existing set. The server accepts up to eight photos with a combined size of 32 MiB, converts them to WebP, and drops image metadata. Use **标记已售出** to mark a listing as sold and move it to the end.
 
 The CLI uses the same password, fields, and publication API. Run it from a checkout on any computer that can reach the site. It prompts for the password.
 
@@ -50,7 +50,7 @@ The CLI uses the same password, fields, and publication API. Run it from a check
 node scripts/admin/cli.mjs list --origin https://your-site
 node scripts/admin/cli.mjs add --origin https://your-site --name "Desk" --price 25 --description "Solid wood" --photo desk.jpg
 node scripts/admin/cli.mjs edit ITEM_ID --origin https://your-site --price 20 --date 2027-05-20
-node scripts/admin/cli.mjs unpublish ITEM_ID --origin https://your-site
+node scripts/admin/cli.mjs mark-sold ITEM_ID --origin https://your-site
 ```
 
 Repeat `--photo` to send multiple images. Omit `--date` when adding an item for immediate sale. Use `--date now` when moving a future item to the current page. Omit unchanged fields when editing. Use `SECONDHAND_ORIGIN` to supply the site URL or `--password-stdin` to read the password from standard input in automation.
@@ -75,4 +75,4 @@ Back up the release pointed to by the published directory's `current` symlink, i
 
 ## Source layout
 
-`src/components/CatalogPage.astro`, `ItemCard.astro` and `ItemDetails.astro` render the public catalog and gallery. `CatalogEditor.astro` and `src/scripts/editor.mjs` add inline editing after sign-in. The shared catalog service in `scripts/admin/catalog.mjs` handles listing, saving and unpublishing items. Both clients call the HTTP adapter in `scripts/admin/server.mjs`. The filesystem adapter in `scripts/admin/files.mjs` processes uploads, checks the Astro build, and switches the active release.
+`src/components/CatalogPage.astro`, `ItemCard.astro` and `ItemDetails.astro` render the public catalog and gallery. `CatalogEditor.astro` and `src/scripts/editor.mjs` add inline editing after sign-in. The shared catalog service in `scripts/admin/catalog.mjs` handles listing, saving and marking items as sold. Both clients call the HTTP adapter in `scripts/admin/server.mjs`. The filesystem adapter in `scripts/admin/files.mjs` processes uploads, checks the Astro build, and switches the active release.

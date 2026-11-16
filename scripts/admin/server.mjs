@@ -67,16 +67,16 @@ const server = createServer(async (req, res) => {
     if (pathname === `${prefix}/items` && req.method === "GET")
       return reply(res, 200, await catalog.list());
 
-    const unpublish =
-      /^\/api\/catalog\/items\/([a-z0-9][a-z0-9-]*)\/unpublish$/.exec(pathname);
-    if (unpublish && req.method === "POST") {
+    const markSold =
+      /^\/api\/catalog\/items\/([a-z0-9][a-z0-9-]*)\/mark-sold$/.exec(pathname);
+    if (markSold && req.method === "POST") {
       const fields = Object.fromEntries(
         new URLSearchParams((await body(req, 4096)).toString()),
       );
       return reply(
         res,
         200,
-        await catalog.save(unpublish[1], fields, [], { unpublish: true }),
+        await catalog.save(markSold[1], fields, [], { markSold: true }),
       );
     }
 

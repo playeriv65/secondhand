@@ -1,7 +1,7 @@
 import { randomUUID, createHash } from "node:crypto";
 import {
   isUpcoming,
-  listedItems,
+  orderedItems,
   localDay,
 } from "../../src/lib/availability.mjs";
 import { validate } from "../validate.mjs";
@@ -30,24 +30,23 @@ export function catalogService({ read, publish }) {
   return {
     async list() {
       const catalog = await read();
-      return listedItems(catalog.items).map((item) => ({
+      return orderedItems(catalog.items).map((item) => ({
         ...item,
         version: versionOf(item),
       }));
     },
-    async save(id, fields, photos, { unpublish = false } = {}) {
+    async save(id, fields, photos, { markSold = false } = {}) {
       if (publishing)
         throw new CatalogError(409, "正在发布另一件商品，请稍后重试。");
       publishing = true;
       try {
         const catalog = await read();
-        const previous =
-          id && listedItems(catalog.items).find((item) => item.id === id);
+        const previous = id && catalog.items.find((item) => item.id === id);
         if (id && !previous)
           throw new CatalogError(404, "找不到这件商品，请刷新。");
         if (previous && fields.version !== versionOf(previous))
           throw new CatalogError(409, "这件商品已更新，请刷新后再编辑。");
-        if (unpublish) {
+        if (markSold) {
           const items = catalog.items.map((item) =>
             item.id === id ? { ...item, status: "sold" } : item,
           );

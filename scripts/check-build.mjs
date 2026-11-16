@@ -5,13 +5,13 @@ import { catalog, root } from "../src/lib/catalog.mjs";
 import {
   isUpcoming,
   itemsForPage,
-  listedItems,
+  orderedItems,
   localDay,
 } from "../src/lib/availability.mjs";
 
 const dist = path.join(root, "dist");
 const day = localDay(catalog.timeZone);
-const listings = listedItems(catalog.items);
+const listings = orderedItems(catalog.items);
 const escape = (text) =>
   text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 const hasHidden = (attributes) => /\bhidden(?:\s|=|$)/.test(attributes);
@@ -38,7 +38,10 @@ for (const [file, later] of [
   const cards = [...html.matchAll(/<article\b([^>]*)>([\s\S]*?)<\/article>/g)];
   const visible = cards.filter((match) => !hasHidden(match[1]));
   assert.equal(cards.length, listings.length);
-  assert.equal(visible.length, itemsForPage(catalog.items, later, day).length);
+  assert.deepEqual(
+    visible.map((match) => /data-id="([^"]+)"/.exec(match[1])?.[1]),
+    itemsForPage(catalog.items, later, day).map((item) => item.id),
+  );
 
   for (const item of listings) {
     const card = cards.find((match) =>
@@ -48,6 +51,7 @@ for (const [file, later] of [
     const [, attributes, body] = card;
     assert.equal(hasHidden(attributes), isUpcoming(item, day) !== later);
     assert.ok(body.includes(escape(item.name)));
+    assert.equal(body.includes('class="item-sold"'), item.status === "sold");
     assert.ok(body.includes(escape(item.description)));
     assert.ok(body.includes('aria-haspopup="dialog"'));
     const date = /<p\b([^>]*\bdata-date(?:\s[^>]*)?)>/.exec(body);

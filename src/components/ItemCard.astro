@@ -13,6 +13,7 @@ const { item, day, hidden } = Astro.props;
 >
   <div class="item-photo">
     <img src={item.images[0]} alt={item.name} loading="lazy" />
+    {item.status === "sold" && <span class="item-sold">已售出</span>}
   </div>
   <div class="item-info">
     <div class="item-title-row">

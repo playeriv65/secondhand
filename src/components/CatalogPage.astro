@@ -7,7 +7,7 @@ import {
   localDay,
   itemsForPage,
   isUpcoming,
-  listedItems,
+  orderedItems,
 } from "../lib/availability.mjs";
 import "../styles/global.css";
 const { later = false } = Astro.props;
@@ -52,7 +52,7 @@ const title = later ? `${catalog.title} · 毕业后预计出` : catalog.title;
       <section aria-label="我的闲置物品">
         <CatalogEditor />
         <div class="grid">
-          {listedItems(catalog.items).map((item) => (
+          {orderedItems(catalog.items).map((item) => (
             <ItemCard
               item={item}
               day={day}
