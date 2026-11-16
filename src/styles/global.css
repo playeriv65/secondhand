@@ -98,6 +98,12 @@ main {
   position: absolute;
   object-fit: cover;
 }
+.item:has(.item-photo > .item-sold) .item-photo > img {
+  filter: grayscale(90%) brightness(0.84);
+}
+.item:has(.item-photo > .item-sold) .item-info {
+  color: #596357;
+}
 .item-sold {
   display: inline-block;
   border-radius: 4px;
