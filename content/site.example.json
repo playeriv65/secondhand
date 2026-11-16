@@ -5,13 +5,10 @@
   "currency": "USD",
   "locale": "zh-CN",
   "timeZone": "America/Chicago",
-  "qrImage": "",
   "labels": {
     "empty": "还没有上架物品，稍后再来看看。",
     "free": "免费带走",
-    "qrPending": "微信二维码稍后补充",
-    "datePrefix": "预计",
-    "qrAlt": "微信二维码"
+    "datePrefix": "预计"
   },
   "items": [],
   "laterDescription": "这里大部分是预计毕业后会转让的物品，目前还在使用。可以提前微信联系我商量预留，每件的预计交接时间写在下面，具体日期到时再确认。"

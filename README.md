@@ -18,16 +18,15 @@ Open the printed loopback URL. Astro watches source changes. After changing loca
 Copy `content/site.example.json` to `site.local.json` and edit the copy. The local file and `assets.local/` are ignored by Git. If no local file exists, the build uses the empty example catalog.
 
 - `pickup`: short public introduction with pickup and campus meeting arrangements.
-- `qrImage`: optional public QR image path. Show only the cropped QR code with its quiet zone, without the surrounding profile screenshot. The page starts with the introduction and QR image; it has no top bar or repeated contact links.
 - `items`: unique slug, name, nonnegative USD price, description, status, date, and images.
 - `laterDescription`: introduction to the graduation items page. The home page shows items available now, while `/later.html` shows items with a future availability date. Items move to the current page when the date arrives.
 - `status`: `available`, `reserved`, or `sold`. Set `availableFrom` to `null` for immediate availability, or an ISO date such as `2027-05-20` for later pickup. Only future dates appear on cards. Items with status `sold` are omitted. Astro renders the initial list into HTML. The browser switches between the two URLs in place and moves items when the date arrives in `timeZone`. With JavaScript disabled, the links load separate pages and the lists reflect the build date.
 - `images`: paths such as `/media/chair/front.webp`. Put the corresponding files in `assets.local/chair/front.webp`. Each listing requires at least one real photo.
 - `labels`, browser title, introduction, locale, currency, and timezone are configuration data. Keep seller-specific information out of application source.
 
-Process uploaded photos to remove EXIF and other metadata before adding them to `assets.local/`. Optimize photos as JPEG/WebP and use reasonably sized images. QR codes must remain readable.
+Process uploaded photos to remove EXIF and other metadata before adding them to `assets.local/`. Optimize photos as JPEG/WebP and use reasonably sized images.
 
-Local files are excluded from the public repository, but **the built catalog, address, QR code and referenced images become public when deployed**. The prepare step validates and copies only referenced images into ignored `public/media/`; never commit that directory. Do not put private photos, drafts, credentials or backups there.
+Local files are excluded from the public repository, but **the built catalog, address and referenced images become public when deployed**. The prepare step validates and copies only referenced images into ignored `public/media/`; never commit that directory. Do not put private photos, drafts, credentials or backups there.
 
 ## Checks
 
@@ -39,7 +38,7 @@ npm run build
 npm run check:build
 ```
 
-Validation rejects duplicate IDs, negative prices, invalid calendar dates, unsafe image paths, and listings without photos. Before publishing, inspect desktop and mobile layouts, list switching and browser history, the card gallery, prices, descriptions and QR readability.
+Validation rejects duplicate IDs, negative prices, invalid calendar dates, unsafe image paths, and listings without photos. Before publishing, inspect desktop and mobile layouts, list switching and browser history, the card gallery, prices and descriptions.
 
 ## Publishing items
 

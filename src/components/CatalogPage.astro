@@ -32,21 +32,7 @@ const title = later ? `${catalog.title} · 毕业后预计出` : catalog.title;
   >
     <main>
       <section class="intro" aria-label="交易说明">
-        <div class="intro-copy">
-          <p class="pickup">{catalog.pickup}</p>
-        </div>
-        <div class="intro-qr">
-          {catalog.qrImage ? (
-            <img
-              src={catalog.qrImage}
-              alt={catalog.labels.qrAlt}
-              width="180"
-              height="180"
-            />
-          ) : (
-            <div class="qr-placeholder">{catalog.labels.qrPending}</div>
-          )}
-        </div>
+        <p class="pickup">{catalog.pickup}</p>
       </section>
       <nav class="pages" aria-label="出售时间">
         <a href="/" data-view="now" aria-current={!later ? "page" : undefined}>

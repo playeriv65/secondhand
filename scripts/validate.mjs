@@ -23,17 +23,14 @@ export function validate(config) {
   });
   new Intl.DateTimeFormat(config.locale, { timeZone: config.timeZone });
   require(config.labels && typeof config.labels === "object", "Missing labels");
-  const requiredLabels = ["empty", "free", "qrPending", "qrAlt", "datePrefix"];
+  const requiredLabels = ["empty", "free", "datePrefix"];
   for (const key of requiredLabels)
     require(typeof config.labels[key] === "string" &&
       config.labels[key].length > 0, `Missing label: ${key}`);
-  require(typeof config.qrImage === "string", "Invalid QR image field");
   const imagePath = (value) =>
     /^\/media\/[A-Za-z0-9_/-]+\.(jpg|jpeg|png|webp)$/i.test(value) &&
     !value.includes("..") &&
     !value.includes("//");
-  require(!config.qrImage ||
-    imagePath(config.qrImage), "QR image must be a local /media/ image");
   require(Array.isArray(config.items), "items must be an array");
   const ids = new Set();
   for (const item of config.items) {

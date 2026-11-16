@@ -5,12 +5,7 @@ import { catalog, root } from "../src/lib/catalog.mjs";
 
 const media = path.join(root, "public/media");
 const images = [
-  ...new Set(
-    [
-      catalog.qrImage,
-      ...listedItems(catalog.items).flatMap((item) => item.images),
-    ].filter(Boolean),
-  ),
+  ...new Set(listedItems(catalog.items).flatMap((item) => item.images)),
 ];
 for (const image of images)
   await access(path.join(root, "assets.local", image.slice("/media/".length)));
