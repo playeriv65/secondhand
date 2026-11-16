@@ -36,15 +36,12 @@ main {
 .intro-copy {
   max-width: 740px;
 }
-#description,
 .pickup {
-  font-size: 13px;
-  line-height: 1.9;
-  color: #727c6b;
-  margin: 8px 0;
-}
-.pickup {
-  color: #50624b;
+  font-size: 17px;
+  line-height: 1.65;
+  color: #344131;
+  margin: 0;
+  max-width: 34em;
 }
 .pages {
   display: flex;
@@ -181,11 +178,6 @@ main {
   .intro {
     display: block;
     padding: 24px 0;
-  }
-  #description,
-  .pickup {
-    font-size: 12px;
-    line-height: 1.9;
   }
   .pages {
     gap: 24px;
